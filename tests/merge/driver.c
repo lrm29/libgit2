@@ -386,3 +386,34 @@ void test_merge_driver__not_configured_driver_falls_back(void)
 	test_drivers_register();
 }
 
+void test_merge_driver__binary_no_conflict_markers(void)
+{
+	const char *expected = "this file is changed in master and branch\n";
+	const git_index_entry *ancestor, *ours, *theirs;
+
+	// Make merge do a binary merge for conflicting.txt by writing it to the
+	// .gitattributes.
+	git_buf line = GIT_BUF_INIT;
+	git_buf_printf(&line, "*.txt -merge\n");
+	cl_assert(!git_buf_oom(&line));
+	cl_git_mkfile(TEST_REPO_PATH "/.gitattributes", line.ptr);
+	git_buf_dispose(&line);
+
+	// Call git_merge.
+	merge_branch();
+
+	// The assertion passes.
+	cl_git_pass(git_index_conflict_get(&ancestor, &ours, &theirs,
+		repo_index, "conflicting.txt"));
+
+	// This assertion fails.
+	// The actual content of the file in the working tree:
+	//
+	// <<<<<<< HEAD
+	// this file is changed in master and branch
+	// =======
+	// this file is changed in branch and master
+	// >>>>>>>
+	cl_assert_equal_file(expected, strlen(expected),
+		TEST_REPO_PATH "/conflicting.txt");
+}
