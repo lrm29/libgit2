@@ -1,4 +1,4 @@
-libgit2 - the Git linkable librarydfsd
+libgit2 - the Git linkable library
 ==================================
 
 | Build Status | |
