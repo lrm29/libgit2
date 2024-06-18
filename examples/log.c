@@ -245,7 +245,7 @@ static int add_revision(struct log_state *s, const char *revstr)
 	}
 
 	if (*revstr == '^') {
-		revs.flags = GIT_REVPARSE_SINGLE;
+		revs.flags = GIT_REVSPEC_SINGLE;
 		hide = !hide;
 
 		if (git_revparse_single(&revs.from, s->repo, revstr + 1) < 0)
@@ -253,12 +253,12 @@ static int add_revision(struct log_state *s, const char *revstr)
 	} else if (git_revparse(&revs, s->repo, revstr) < 0)
 		return -1;
 
-	if ((revs.flags & GIT_REVPARSE_SINGLE) != 0)
+	if ((revs.flags & GIT_REVSPEC_SINGLE) != 0)
 		push_rev(s, revs.from, hide);
 	else {
 		push_rev(s, revs.to, hide);
 
-		if ((revs.flags & GIT_REVPARSE_MERGE_BASE) != 0) {
+		if ((revs.flags & GIT_REVSPEC_MERGE_BASE) != 0) {
 			git_oid base;
 			check_lg2(git_merge_base(&base, s->repo,
 				git_object_id(revs.from), git_object_id(revs.to)),
@@ -329,7 +329,7 @@ static void print_time(const git_time *intime, const char *prefix)
 /** Helper to print a commit object. */
 static void print_commit(git_commit *commit, struct log_options *opts)
 {
-	char buf[GIT_OID_HEXSZ + 1];
+	char buf[GIT_OID_SHA1_HEXSIZE + 1];
 	int i, count;
 	const git_signature *sig;
 	const char *scan, *eol;
